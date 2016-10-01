@@ -1,0 +1,46 @@
+#msg-container{
+    height: 200px;
+    width: 250px;
+    border: 1px solid grey;
+    overflow-y: scroll;
+    font-size: small;
+    color: black;
+    margin-bottom: 20px;
+}
+#msg-box{
+    width: 250px;
+}
+.by-me{
+    text-align: right;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+    background-color: lightblue;
+    margin: 10px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: inline-block;
+    float:right;
+}
+.by-receiver{
+    text-align: left;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    background-color: lightgray;
+    margin: 10px;
+    border-top-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+    display: inline-block;
+}
+.unable-to-send{
+    text-align: right;
+    padding-left: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: orangered;
+}
