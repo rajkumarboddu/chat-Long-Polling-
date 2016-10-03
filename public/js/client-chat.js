@@ -1,9 +1,24 @@
 $(document).ready(function(){
-    var from_id = '';
-    var to_id = '';
-    var received_msgs = [];
-    var csrf_token = $('input[name="_token"]').val();
-    var last_activity_time;
+    var from_id = '',
+        to_id = '',
+        received_msgs = [],
+        csrf_token = $('input[name="_token"]').val(),
+        last_activity_time,
+        $container = $('#mCSB_1_container'),
+        ping_interval,
+        init_xhr;
+
+    $('#start-chat-btn').click(function(e){
+        e.preventDefault();
+        $('.container').fadeToggle('slow');
+        if(init_xhr === undefined){
+            init();
+        } else{
+            init_xhr.abort();
+            init_xhr = undefined;
+            clearInterval(ping_interval);
+        }
+    });
 
     var init = function(){
         var chat_data = {
@@ -11,44 +26,47 @@ $(document).ready(function(){
             to_id: to_id,
             received_msgs : received_msgs
         };
-        $.ajax({
-            url: 'chat/client/init',
-            method: 'get',
-            async: true,
-            data: chat_data
-        }).done(function(response){
-            received_msgs = [];
-            if(response.from_id !== undefined){
-                from_id = response.from_id;
-            }
-            if(response.to_id !== undefined){
-                to_id = response.to_id;
-            }
-            // if any previous messages exists
-            if(response.prev_msgs !== undefined){
-                $.each(response.prev_msgs,function(i,ele){
-                    if(ele.msg_by=='client'){
-                        $container.append('<div class="by-me">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
-                    } else if(ele.msg_by=='exe'){
-                        $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
-                    }
-                });
-                scrollToBottom($('#msg-container'));
-            }
-            // if new message arrives
-            if(response.new_msgs !== undefined){
-                $.each(response.new_msgs,function(i,ele){
-                    // append messages
-                    $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
-                    scrollToBottom($('#msg-container'));
-                    received_msgs.push(ele.id);
-                });
-            }
-            last_activity_time = (new Date()).getTime();
-            init();
-        }).fail(function(responseObj){
-            console.log(responseObj);
-        });
+        init_xhr = $.ajax({
+                        url: 'chat/client/init',
+                        method: 'get',
+                        async: true,
+                        data: chat_data
+                    }).done(function(response){
+                        received_msgs = [];
+                        if(response.from_id !== undefined){
+                            from_id = response.from_id;
+                        }
+                        if(response.to_id !== undefined){
+                            to_id = response.to_id;
+                        }
+                        // if any previous messages exists
+                        if(response.prev_msgs !== undefined){
+                            $.each(response.prev_msgs,function(i,ele){
+                                if(ele.msg_by=='client'){
+                                    $container.append('<div class="by-me">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
+                                } else if(ele.msg_by=='exe'){
+                                    $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
+                                }
+                            });
+                            scrollToBottom($('#msg-container'));
+                        }
+                        // if new message arrives
+                        if(response.new_msgs !== undefined){
+                            $.each(response.new_msgs,function(i,ele){
+                                // append messages
+                                $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
+                                scrollToBottom($('#msg-container'));
+                                received_msgs.push(ele.id);
+                            });
+                        }
+                        last_activity_time = (new Date()).getTime();
+                        // ping server
+                        ping_interval = setInterval(ping,1000);
+                        // listen for messages again
+                        init();
+                    }).fail(function(responseObj){
+                        console.log(responseObj);
+                    });
     };
 
     var ping_xhr;
@@ -61,11 +79,6 @@ $(document).ready(function(){
             });
         }
     }
-
-    // ping server
-    setInterval(ping,1000);
-
-    var $container = $('#mCSB_1_container');
 
     // on pressing enter key send message
     $('#msg').keyup(function(e) {
@@ -102,8 +115,6 @@ $(document).ready(function(){
         });
         $('#msg').val('');
     }
-
-    init();
 
     function scrollToBottom($div){
         $div.mCustomScrollbar("scrollTo","bottom");

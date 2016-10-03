@@ -28,6 +28,11 @@ class AdminController extends Controller
         }
     }
 
+    public function doLogout(){
+        Auth::logout();
+        return redirect('/');
+    }
+
     public function viewChatPage(){
         return view('chatPage');
     }
@@ -39,7 +44,7 @@ class AdminController extends Controller
                         ->whereNull('c.exec_id')
                         ->groupBy('c.id')
                         ->select(DB::raw('sum(case when m.read=0 then 1 else 0 end) as unread_count,
-                        (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                        (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
                         ->get();
         return $chat_reqs;
     }
@@ -51,7 +56,7 @@ class AdminController extends Controller
                     ->where('c.exec_id',Auth::user()->id)
                     ->groupBy('c.id')
                     ->select(DB::raw('sum(case when m.read=0 then 1 else 0 end) as unread_count,
-                                (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
                     ->get();
         return $chat_reqs;
     }
@@ -77,20 +82,21 @@ class AdminController extends Controller
                         ->where('c.id',$request->chat_id)
                         ->select('message','from_id','to_id',
                             DB::raw('(case when m.from_id="'.$chat->chat_token.'" then "client" else "exe" end) as msg_by,
-                            DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'));
+                            DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at, m.created_at as created_at1'));
             $msgs = DB::table('chats as c')
                         ->join('messages as m','m.to_id','=','c.chat_token')
                         ->where('c.id',$request->chat_id)
                         ->unionAll($from_msgs)
-                        ->orderBy('created_at','asc')
+                        ->orderBy('created_at1','asc')
                         ->select('message','from_id','to_id',
                             DB::raw('(case when m.from_id="'.$chat->chat_token.'" then "client" else "exe" end) as msg_by,
-                            DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'))
+                            DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at, m.created_at as created_at1'))
                         ->get();
             DB::commit();
             return response()->json(['chat' => $chat, 'msgs' => $msgs],200);
         } catch(\Exception $e){
             DB::rollBack();
+            throw $e;
             return response()->json('Internal server error',500);
         }
     }
@@ -142,7 +148,9 @@ class AdminController extends Controller
             }
             while(true){
                 // check for new messages
-                $new_msgs = DB::table('messages')->where('from_id',$to_id)->where('read',0)->get();
+                $new_msgs = DB::table('messages')->where('from_id',$to_id)->where('read',0)
+                            ->select('*',DB::raw('DATE_FORMAT(created_at,"%b %d %Y %h:%i %p") as created_at'))
+                            ->get();
                 if(count($new_msgs) > 0){
                     return response()->json($new_msgs,200);
                     break;
@@ -188,7 +196,7 @@ class AdminController extends Controller
                             ->whereNotIn('c.id',$new_reqs_ids)
                             ->groupBy('c.id')
                             ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
                             ->get();
                 if(count($new_reqs_updates)>0){
                     $res_data['new_reqs'] = $new_reqs_updates;
@@ -202,7 +210,7 @@ class AdminController extends Controller
                                 ->whereIn('c.id',$new_reqs_ids)
                                 ->groupBy('c.id')
                                 ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                            (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                            (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
                                 ->get();
                 if(count($new_to_old)>0){
                     $res_data['new_to_old'] = $new_to_old;
@@ -214,7 +222,7 @@ class AdminController extends Controller
                                     ->whereIn('c.id',$new_and_old_reqs_ids)
                                     ->groupBy('c.id')
                                     ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                    (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                    (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
                                     ->get();
                 // check any updates happened to status and unread message count
                 $status_and_unread_updates = [];

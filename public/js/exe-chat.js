@@ -6,7 +6,10 @@ $(document).ready(function(){
         csrf_token = $('input[name="_token"]').val(),
         listen_xhr,
         new_reqs= [],
-        old_reqs = [];
+        old_reqs = [],
+        new_chat_tone = new Audio('../tones/new_chat_req.mp3'),
+        new_msg_tone = new Audio('../tones/new_msg.mp3'),
+        out_of_focus = true;
 
     var init = function(){
         setNotificationData(notificationAjax);
@@ -64,7 +67,6 @@ $(document).ready(function(){
                         return true;
                     }
                     var $con_tmp = $('#templates > .con').clone(),
-                        status_class,
                         status = ele.status,
                         id = ele.id;
                     $con_tmp.attr('id','con'+id).data('id',id);
@@ -74,6 +76,7 @@ $(document).ready(function(){
                     $chat_reqs.append($con_tmp);
                     scrollToBottom($('#chat-reqs'));
                 });
+                if(response.new_reqs.length>0) new_chat_tone.play();
             }
             // move newly assigned cons from chat reqs to old chats
             if(response.new_to_old!==undefined){
@@ -96,6 +99,7 @@ $(document).ready(function(){
             }
             // update status/unread count
             if(response.status_unread_updates!==undefined){
+                var new_msg_count = 0;
                 $.each(response.status_unread_updates,function(i,ele){
                     var $con = $('#con'+ele.id);
                     if($con.length==0){
@@ -114,6 +118,7 @@ $(document).ready(function(){
                         $status.addClass(new_class);
                     }
                     if($unread_count.data('id')!=unread_count){
+                        if($unread_count.data('id')<unread_count) new_msg_count++;
                         $unread_count.data('id',unread_count).html(unread_count);
                         if(unread_count==0){
                             $unread_count.hide();
@@ -122,6 +127,7 @@ $(document).ready(function(){
                         }
                     }
                 });
+                if(new_msg_count>0) new_msg_tone.play();
             }
             console.log(response);
             init();
@@ -233,6 +239,12 @@ $(document).ready(function(){
             received_msgs = [];
             // if new messages arrive
             $.each(response,function(i,ele){
+                // append unread message notification if out of focus
+                if(out_of_focus && $container.find('#unread-notification').length==0){
+                    var $clone = $('#templates > #unread-msg-notification ').clone();
+                    $clone.attr('id','unread-notification');
+                    $container.append($clone);
+                }
                 // append messages
                 $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
                 scrollToBottom($('#msg-container'));
@@ -264,5 +276,20 @@ $(document).ready(function(){
         var timestamp = date.toLocaleTimeString("en-us", options);
         return timestamp.replace(',','');
     }
+
+    $('#msg').blur(function(){
+        out_of_focus = true;
+        console.log('out of focus');
+    });
+
+    $('#msg').focus(function(){
+        console.log('in focus');
+        out_of_focus = false;
+        // hide unread messages notification area
+        if($container.find('#unread-notification').length>0){
+            $container.find('#unread-notification').fadeOut('slow');
+            $container.find('#unread-notification').remove();
+        }
+    });
 
 });

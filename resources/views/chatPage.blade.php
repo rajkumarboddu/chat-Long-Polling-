@@ -180,17 +180,38 @@
     .break{
         clear: both;
     }
+
+    #send-btn{
+        display: inline-block;
+        vertical-align: top;
+        margin-top: 8px;
+    }
+
+    #unread-notification{
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background-color: bisque;
+        clear: both;
+        width: 85%;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
     </style>
     <link rel="stylesheet" type="text/css" href="{{url('css/jquery.mCustomScrollbar.css')}}" />
 </head>
 <body>
 <div id="chat-box-container">
+    <div>
+        <a href="{{url('admin/logout')}}">Logout</a>
+    </div>
     <div id="chat-box">
         <p><strong>Client #<span id="client-id"></span></strong><strong class="right close">X</strong></p>
         <div id="msg-container">
         </div>
         <div id="msg-box">
-            <input type="text" id="msg" name="msg">
+            <textarea id="msg" name="msg" rows="2" style="resize: none;"></textarea>
             {{csrf_field()}}
             <input type="button" id="send-btn" value="Send">
         </div>
@@ -231,6 +252,9 @@
         <div class="status"></div>
         <div class="client-name">Client - </div>
         <div class="unread-count"></div>
+    </div>
+    <div id="unread-msg-notification">
+        Unread Messages
     </div>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>

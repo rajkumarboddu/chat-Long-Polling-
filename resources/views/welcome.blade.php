@@ -17,8 +17,12 @@
 
             .container {
                 text-align: center;
-                display: table-cell;
+                display: inline-block;
                 vertical-align: middle;
+                display: none;
+                margin-right: 20px;
+                float:right;
+                margin-top: 20px;
             }
 
             .content {
@@ -27,13 +31,14 @@
             }
 
             #admin-login-container{
-                position: absolute;
-                top: 20px;
-                right: 20px;
                 width: 200px;
-                height: 150px;
+                height: 110px;
                 border: 1px solid grey;
                 padding: 20px 50px 50px 50px;
+                display: inline-block;
+                float: right;
+                margin-right: 20%;
+                margin-top: 20px;
             }
 
             .msg{
@@ -45,17 +50,28 @@
             .err{
                 color: red;
             }
+
+            #start-chat-btn{
+                margin: 20px 0px 0px 20px;
+            }
+
+            #send-btn{
+                display: inline-block;
+                vertical-align: top;
+                margin-top: 8px;
+            }
         </style>
         <link rel="stylesheet" type="text/css" href="{{url('css/client-chat.css')}}" />
         <link rel="stylesheet" type="text/css" href="{{url('css/jquery.mCustomScrollbar.css')}}" />
     </head>
     <body>
+        <button id="start-chat-btn">Start Chat!</button>
         <div class="container">
             <div class="content">
                 <div id="msg-container">
                 </div>
                 <div id="msg-box">
-                    <input type="text" id="msg" name="msg">
+                    <textarea id="msg" name="msg" rows="2" style="resize: none;"></textarea>
                     {{csrf_field()}}
                     <input type="button" id="send-btn" value="Send">
                 </div>
@@ -63,7 +79,7 @@
         </div>
         <div id="admin-login-container">
             <form id="login-form">
-                <h4>Executive Login</h4>
+                <strong>Executive Login</strong>
                 <span class="msg"></span>
                 <input type="text" name="username" placeholder="Username" /><br><br>
                 <input type="password" name="password" placeholder="Password" /><br><br>

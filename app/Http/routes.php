@@ -36,6 +36,7 @@ Route::group(['prefix' => 'admin'],function(){
         Route::post('sendMessage','AdminController@saveMessage');
         Route::get('listen','AdminController@listen');
         Route::post('getNotifications','AdminController@getNotifications');
+        Route::get('logout','AdminController@doLogout');
     });
 });
 
