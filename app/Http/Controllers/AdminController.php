@@ -71,6 +71,11 @@ class AdminController extends Controller
         DB::beginTransaction();
         try{
             $chat = DB::table('chats')->where('id',$request->chat_id)->select('id','chat_token')->first();
+            // get first unread message from past messages
+            $c_query = DB::table('messages')
+                        ->where('from_id',$chat->chat_token)
+                        ->where('read',0);
+            $first_unread_msg = $c_query->orderBy('created_at','asc')->first();
             // mark unread messages as read
             DB::table('messages')
                 ->where('from_id',$chat->chat_token)
@@ -80,7 +85,7 @@ class AdminController extends Controller
             $from_msgs = DB::table('chats as c')
                         ->join('messages as m','m.from_id','=','c.chat_token')
                         ->where('c.id',$request->chat_id)
-                        ->select('message','from_id','to_id',
+                        ->select('m.id','message','from_id','to_id',
                             DB::raw('(case when m.from_id="'.$chat->chat_token.'" then "client" else "exe" end) as msg_by,
                             DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at, m.created_at as created_at1'));
             $msgs = DB::table('chats as c')
@@ -88,12 +93,19 @@ class AdminController extends Controller
                         ->where('c.id',$request->chat_id)
                         ->unionAll($from_msgs)
                         ->orderBy('created_at1','asc')
-                        ->select('message','from_id','to_id',
+                        ->select('m.id','message','from_id','to_id',
                             DB::raw('(case when m.from_id="'.$chat->chat_token.'" then "client" else "exe" end) as msg_by,
                             DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at, m.created_at as created_at1'))
                         ->get();
             DB::commit();
-            return response()->json(['chat' => $chat, 'msgs' => $msgs],200);
+            $res_data = [
+                'chat' => $chat,
+                'msgs' => $msgs
+            ];
+            if($first_unread_msg){
+                $res_data['first_unread_msg_id'] = $first_unread_msg->id;
+            }
+            return response()->json($res_data,200);
         } catch(\Exception $e){
             DB::rollBack();
             throw $e;

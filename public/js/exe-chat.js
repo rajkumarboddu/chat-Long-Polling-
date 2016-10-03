@@ -167,8 +167,19 @@ $(document).ready(function(){
         }).done(function(response){
             $this.find('.unread-count').hide();
             $container.html('');
+            var first_unread_msg_id, unread_exists = false;
+            if(response.first_unread_msg_id !== undefined){
+                first_unread_msg_id = response.first_unread_msg_id;
+                unread_exists = true;
+            }
             $.each(response.msgs,function(i,ele){
                 if(ele.msg_by=='client'){
+                    if(unread_exists && ele.id==first_unread_msg_id){
+                        var $clone = $('#templates > #unread-msg-notification ').clone();
+                        $clone.attr('id','unread-notification');
+                        $container.append($clone);
+                        unread_exists = false;
+                    }
                     $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div></div>');
                 } else if(ele.msg_by=='exe'){
                     $container.append('<div class="by-me">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div></div>');
