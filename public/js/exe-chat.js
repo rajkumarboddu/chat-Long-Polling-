@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    var $container = $('#msg-container'),
+    var $container = $('#mCSB_1_container'),
         to_id = '',
         received_msgs = [],
         csrf_token = $('input[name="_token"]').val(),
@@ -16,7 +16,7 @@ $(document).ready(function(){
         new_reqs = [];
         old_reqs = [];
         // get chat reqs
-        $('#chat-reqs > .con').each(function(i,ele){
+        $('#mCSB_2_container > .con').each(function(i,ele){
             var con = {
                 id: $(ele).data('id'),
                 status: $(ele).find('.status').data('id'),
@@ -25,7 +25,7 @@ $(document).ready(function(){
             new_reqs.push(con);
         });
         // get old chat
-        $('#old-cons > .con').each(function(i,ele){
+        $('#mCSB_3_container > .con').each(function(i,ele){
             var con = {
                 id: $(ele).data('id'),
                 status: $(ele).find('.status').data('id'),
@@ -59,7 +59,7 @@ $(document).ready(function(){
             // append new chat requests
             if(response.new_reqs!==undefined){
                 $.each(response.new_reqs,function(i,ele){
-                    var $chat_reqs = $('#chat-reqs');
+                    var $chat_reqs = $('#mCSB_2_container');
                     if($chat_reqs.find('#con'+ele.id).length==1){
                         return true;
                     }
@@ -72,24 +72,24 @@ $(document).ready(function(){
                     $con_tmp.find('.client-name').append(ele.id);
                     $con_tmp = setUnreadCount($con_tmp,ele.unread_count);
                     $chat_reqs.append($con_tmp);
-                    scrollToBottom($chat_reqs);
+                    scrollToBottom($('#chat-reqs'));
                 });
             }
             // move newly assigned cons from chat reqs to old chats
             if(response.new_to_old!==undefined){
                 $.each(response.new_to_old,function(i,ele){
-                    var $o_con = $('#chat-reqs > #con'+ele.id);
+                    var $o_con = $('#mCSB_2_container > #con'+ele.id);
                     if($o_con.length==0){
                         return true;
                     }
-                    if($('#old-cons > #con'+ele.id).length==1){
+                    if($('#mCSB_3_container > #con'+ele.id).length==1){
                         return true;
                     }
                     var $con = $o_con.clone(),
                         status = ele.status;
                     $con.find('.status').data('id',status).addClass(getClassNameForStatus(status));
                     $con = setUnreadCount($con,ele.unread_count);
-                    $('#old-cons').append($con);
+                    $('#mCSB_3_container').append($con);
                     scrollToBottom($('#old-cons'));
                     $o_con.remove();
                 });
@@ -171,7 +171,7 @@ $(document).ready(function(){
             to_id = response.chat.chat_token;
             $('#client-id').html(response.chat.id);
             $('#chat-box').show();
-            scrollToBottom($container);
+            scrollToBottom($('#msg-container'));
             if(listen_xhr !== undefined){
                 listen_xhr.abort();
             }
@@ -209,11 +209,11 @@ $(document).ready(function(){
             async: true
         }).done(function(response){
             $container.append('<div class="by-me">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
-            scrollToBottom($container);
+            scrollToBottom($('#msg-container'));
             $('#msg').val('');
         }).fail(function(responseObj){
             $container.append('<div class="unable-to-send">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
-            scrollToBottom($container);
+            scrollToBottom($('#msg-container'));
         });
         $('#msg').val('');
     }
@@ -235,7 +235,7 @@ $(document).ready(function(){
             $.each(response,function(i,ele){
                 // append messages
                 $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
-                scrollToBottom($container);
+                scrollToBottom($('#msg-container'));
                 received_msgs.push(ele.id);
             });
             listen();
@@ -252,12 +252,7 @@ $(document).ready(function(){
     });
 
     function scrollToBottom($div){
-        var $first_child = ($div.children().first().length == 1) ? $div.children().first() : undefined;
-        var $last_child = ($div.children().last()  == 1) ? $div.children().last() : undefined;
-        if($first_child !== undefined && $last_child !== undefined){
-            var height = Math.abs($last_child.position().top)+Math.abs($first_child.position().top);
-            $div.animate({scrollTop: height}, 'slow');
-        }
+        $div.mCustomScrollbar("scrollTo","bottom");
     }
 
     function getTimestamp(){

@@ -68,6 +68,7 @@ class ChatController extends Controller
                 ];
                 if(count($msg_history)>0){
                     $res_data['prev_msgs'] = $msg_history;
+                    $res_data['to_id'] = $chat->exec_id;
                 }
                 return response()->json($res_data,200)->withCookie(cookie()->forever('chat_token', $chat_token));
             }
@@ -78,7 +79,7 @@ class ChatController extends Controller
                     $new_msgs = $new_msgs->where('from_id',$to_id);
                 }
                 $new_msgs = $new_msgs
-                            ->select('*',DB::raw('DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'))
+                            ->select('*',DB::raw('DATE_FORMAT(created_at,"%b %d %Y %h:%i %p") as created_at'))
                             ->get();
                 if(count($new_msgs) > 0){
                     $data = [
@@ -95,6 +96,7 @@ class ChatController extends Controller
             }
         } catch(\Exception $e){
             DB::rollBack();
+            throw $e;
             return response()->json('Internal server error', 500);
         }
     }

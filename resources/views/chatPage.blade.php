@@ -34,10 +34,11 @@
     }
 
     #msg-container{
-        height: 350px;
+        min-height: 350px;
+        max-height: 350px;
         width: 250px;
         border: 1px solid grey;
-        overflow-y: scroll;
+        overflow-y: auto;
         font-size: small;
         color: black;
         margin-bottom: 20px;
@@ -56,9 +57,10 @@
     }
 
     .cons-container{
-        overflow-y: scroll;
+        overflow-y: auto;
         font-size: small;
         min-height: 90%;
+        max-height: 90%;
     }
 
     .con{
@@ -179,6 +181,7 @@
         clear: both;
     }
     </style>
+    <link rel="stylesheet" type="text/css" href="{{url('css/jquery.mCustomScrollbar.css')}}" />
 </head>
 <body>
 <div id="chat-box-container">
@@ -231,6 +234,14 @@
     </div>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript" src="{{url('js/jquery.mCustomScrollbar.concat.min.js')}}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.cons-container, #msg-container').mCustomScrollbar({
+            theme: 'dark'
+        });
+    });
+</script>
 <script type="text/javascript" src="{{url('js/exe-chat.js')}}"></script>
 </body>
 </html>

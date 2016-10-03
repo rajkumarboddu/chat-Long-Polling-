@@ -39,7 +39,7 @@ class AdminController extends Controller
                         ->whereNull('c.exec_id')
                         ->groupBy('c.id')
                         ->select(DB::raw('sum(case when m.read=0 then 1 else 0 end) as unread_count,
-                        (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                        (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
                         ->get();
         return $chat_reqs;
     }
@@ -51,7 +51,7 @@ class AdminController extends Controller
                     ->where('c.exec_id',Auth::user()->id)
                     ->groupBy('c.id')
                     ->select(DB::raw('sum(case when m.read=0 then 1 else 0 end) as unread_count,
-                                (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
                     ->get();
         return $chat_reqs;
     }
@@ -188,7 +188,7 @@ class AdminController extends Controller
                             ->whereNotIn('c.id',$new_reqs_ids)
                             ->groupBy('c.id')
                             ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
                             ->get();
                 if(count($new_reqs_updates)>0){
                     $res_data['new_reqs'] = $new_reqs_updates;
@@ -202,7 +202,7 @@ class AdminController extends Controller
                                 ->whereIn('c.id',$new_reqs_ids)
                                 ->groupBy('c.id')
                                 ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                            (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                            (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
                                 ->get();
                 if(count($new_to_old)>0){
                     $res_data['new_to_old'] = $new_to_old;
@@ -214,7 +214,7 @@ class AdminController extends Controller
                                     ->whereIn('c.id',$new_and_old_reqs_ids)
                                     ->groupBy('c.id')
                                     ->select(DB::raw('sum(case when (m.read is null or m.read=1) then 0 else 1 end) as unread_count,
-                                    (case when (UNIX_TIMESTAMP()-c.last_activity)>6 then 0 else 1 end) as status'),'c.id','c.chat_token')
+                                    (case when (UNIX_TIMESTAMP()-c.last_activity)>5 then 0 else 1 end) as status'),'c.id','c.chat_token')
                                     ->get();
                 // check any updates happened to status and unread message count
                 $status_and_unread_updates = [];

@@ -47,6 +47,7 @@
             }
         </style>
         <link rel="stylesheet" type="text/css" href="{{url('css/client-chat.css')}}" />
+        <link rel="stylesheet" type="text/css" href="{{url('css/jquery.mCustomScrollbar.css')}}" />
     </head>
     <body>
         <div class="container">
@@ -72,9 +73,13 @@
         </div>
     </body>
     <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="{{url('js/client-chat.js')}}"></script>
+    <script type="text/javascript" src="{{url('js/jquery.mCustomScrollbar.concat.min.js')}}"></script>
     <script>
         $(document).ready(function(){
+            $('#msg-container').mCustomScrollbar({
+                theme: 'dark'
+            });
+
             $('#login-submit-btn').click(function(e){
                 e.preventDefault();
                 var $msg = $('.msg');
@@ -89,7 +94,8 @@
                 }).fail(function(responseObj){
                     $msg.html(JSON.parse(responseObj.responseText)).addClass('err');
                 });
-            })
-        })
+            });
+        });
     </script>
+    <script type="text/javascript" src="{{url('js/client-chat.js')}}"></script>
 </html>

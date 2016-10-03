@@ -17,7 +17,6 @@ $(document).ready(function(){
             async: true,
             data: chat_data
         }).done(function(response){
-            console.log(response);
             received_msgs = [];
             if(response.from_id !== undefined){
                 from_id = response.from_id;
@@ -34,14 +33,14 @@ $(document).ready(function(){
                         $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
                     }
                 });
-                scrollToBottom($container);
+                scrollToBottom($('#msg-container'));
             }
             // if new message arrives
             if(response.new_msgs !== undefined){
                 $.each(response.new_msgs,function(i,ele){
                     // append messages
                     $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
-                    scrollToBottom($container);
+                    scrollToBottom($('#msg-container'));
                     received_msgs.push(ele.id);
                 });
             }
@@ -66,7 +65,7 @@ $(document).ready(function(){
     // ping server
     setInterval(ping,1000);
 
-    var $container = $('#msg-container');
+    var $container = $('#mCSB_1_container');
 
     // on pressing enter key send message
     $('#msg').keyup(function(e) {
@@ -96,22 +95,18 @@ $(document).ready(function(){
             data: chat_data
         }).done(function(response){
             $container.append('<div class="by-me">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
+            scrollToBottom($('#msg-container'));
         }).fail(function(responseObj){
             $container.append('<div class="unable-to-send">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
+            scrollToBottom($('#msg-container'));
         });
-        scrollToBottom($container);
         $('#msg').val('');
     }
 
     init();
 
     function scrollToBottom($div){
-        var $first_child = ($div.children().first() !== undefined) ? $div.children().first() : undefined;
-        var $last_child = ($div.children().last() !== undefined) ? $div.children().last() : undefined;
-        if($first_child !== undefined && $last_child !== undefined){
-            var height = Math.abs($last_child.position().top)+Math.abs($first_child.position().top);
-            $div.animate({scrollTop: height}, 'slow');
-        }
+        $div.mCustomScrollbar("scrollTo","bottom");
     }
 
     function getTimestamp(){

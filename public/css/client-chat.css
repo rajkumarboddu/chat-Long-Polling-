@@ -1,8 +1,9 @@
 #msg-container{
-    height: 200px;
+    min-height: 200px;
+    max-height: 200px;
     width: 250px;
     border: 1px solid grey;
-    overflow-y: scroll;
+    overflow-y: auto;
     font-size: small;
     color: black;
     margin-bottom: 20px;
