@@ -174,11 +174,14 @@
         font-size: small;
         border: 1px solid red;
     }
+
+    .break{
+        clear: both;
+    }
     </style>
 </head>
 <body>
 <div id="chat-box-container">
-    <button id="click">click</button>
     <div id="chat-box">
         <p><strong>Client #<span id="client-id"></span></strong><strong class="right close">X</strong></p>
         <div id="msg-container">

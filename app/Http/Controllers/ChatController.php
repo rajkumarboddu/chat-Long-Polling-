@@ -19,8 +19,25 @@ class ChatController extends Controller
         $chat_token = $request->cookie('chat_token');
         DB::beginTransaction();
         try{
+            $msg_history = [];
             if($chat_token){
                 $chat = Chat::where('chat_token',$chat_token)->first();
+                // get messages from past conversation
+                $from_msgs = DB::table('chats as c')
+                            ->join('messages as m','m.from_id','=','c.chat_token')
+                            ->where('c.id',$chat->id)
+                            ->select('message','from_id','to_id',
+                                DB::raw('(case when m.from_id="'.$chat_token.'" then "client" else "exe" end) as msg_by,
+                                    DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'));
+                $msg_history = DB::table('chats as c')
+                                ->join('messages as m','m.to_id','=','c.chat_token')
+                                ->where('c.id',$chat->id)
+                                ->unionAll($from_msgs)
+                                ->orderBy('created_at','asc')
+                                ->select('message','from_id','to_id',
+                                    DB::raw('(case when m.from_id="'.$chat_token.'" then "client" else "exe" end) as msg_by,
+                                        DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'))
+                                ->get();
             }
             // if a first time user create a record
             if($chat==null){
@@ -46,7 +63,13 @@ class ChatController extends Controller
             DB::commit();
             // send created ID in case of initialization
             if($from_id==null){
-                return response()->json(['from_id'=>$chat->chat_token],200)->withCookie(cookie()->forever('chat_token', $chat_token));
+                $res_data = [
+                    'from_id'=>$chat->chat_token
+                ];
+                if(count($msg_history)>0){
+                    $res_data['prev_msgs'] = $msg_history;
+                }
+                return response()->json($res_data,200)->withCookie(cookie()->forever('chat_token', $chat_token));
             }
             while(true){
                 // check for new messages
@@ -54,7 +77,9 @@ class ChatController extends Controller
                 if($to_id){
                     $new_msgs = $new_msgs->where('from_id',$to_id);
                 }
-                $new_msgs = $new_msgs->get();
+                $new_msgs = $new_msgs
+                            ->select('*',DB::raw('DATE_FORMAT(m.created_at,"%b %d %Y %h:%i %p") as created_at'))
+                            ->get();
                 if(count($new_msgs) > 0){
                     $data = [
                         'from_id' => $new_msgs[0]->to_id,
@@ -72,10 +97,6 @@ class ChatController extends Controller
             DB::rollBack();
             return response()->json('Internal server error', 500);
         }
-    }
-
-    public function test(){
-
     }
 
     public function saveMessage(Request $request){

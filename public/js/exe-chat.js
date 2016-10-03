@@ -208,10 +208,11 @@ $(document).ready(function(){
             data: chat_data,
             async: true
         }).done(function(response){
-            $container.append('<div class="by-me">' + message + '</div>');
+            $container.append('<div class="by-me">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
             scrollToBottom($container);
+            $('#msg').val('');
         }).fail(function(responseObj){
-            $container.append('<div class="unable-to-send">' + message + '</div>');
+            $container.append('<div class="unable-to-send">' + message + '<div class="time">'+getTimestamp()+'</div></div><div class="break"></div>');
             scrollToBottom($container);
         });
         $('#msg').val('');
@@ -233,7 +234,7 @@ $(document).ready(function(){
             // if new messages arrive
             $.each(response,function(i,ele){
                 // append messages
-                $container.append('<div class="by-receiver">' + ele.message + '</div><div></div>');
+                $container.append('<div class="by-receiver">' + ele.message + '<div class="time">'+ele.created_at+'</div></div><div class="break"></div>');
                 scrollToBottom($container);
                 received_msgs.push(ele.id);
             });
@@ -251,7 +252,22 @@ $(document).ready(function(){
     });
 
     function scrollToBottom($div){
-        var height = Math.abs($div.children().last().position().top)+Math.abs($div.children().first().position().top);
-        $div.animate({scrollTop: height}, 'slow');
+        var $first_child = ($div.children().first().length == 1) ? $div.children().first() : undefined;
+        var $last_child = ($div.children().last()  == 1) ? $div.children().last() : undefined;
+        if($first_child !== undefined && $last_child !== undefined){
+            var height = Math.abs($last_child.position().top)+Math.abs($first_child.position().top);
+            $div.animate({scrollTop: height}, 'slow');
+        }
     }
+
+    function getTimestamp(){
+        var date = new Date();
+        var options = {
+            year: "numeric", month: "short",
+            day: "2-digit", hour: "2-digit", minute: "2-digit"
+        };
+        var timestamp = date.toLocaleTimeString("en-us", options);
+        return timestamp.replace(',','');
+    }
+
 });
